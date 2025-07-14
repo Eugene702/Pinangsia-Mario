@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ReportResource\Pages;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -22,7 +23,7 @@ class ReportResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('role', '=', 'housekeeping');   
+            ->where('role', '=', 'housekeeping');
     }
 
     public static function table(Table $table): Table
@@ -74,8 +75,32 @@ class ReportResource extends Resource
             ->filters([
                 Filter::make('created_at')
                     ->form([
-                        DatePicker::make('date_from')->label('Dari Tanggal'),
-                        DatePicker::make('date_to')->label('Sampai Tanggal')
+                        Select::make('month')
+                            ->label('Bulan')
+                            ->options([
+                                '1' => 'Januari',
+                                '2' => 'Februari',
+                                '3' => 'Maret',
+                                '4' => 'April',
+                                '5' => 'Mei',
+                                '6' => 'Juni',
+                                '7' => 'Juli',
+                                '8' => 'Agustus',
+                                '9' => 'September',
+                                '10' => 'Oktober',
+                                '11' => 'November',
+                                '12' => 'Desember',
+                            ])
+                            ->required(),
+
+                        Select::make('year')
+                            ->label('Tahun')
+                            ->options(array_combine(
+                                range(now()->year, now()->year - 5),
+                                range(now()->year, now()->year - 5)
+                            ))
+                            ->default(now()->year)
+                            ->required(),
                     ])
             ]);
     }

@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class ListReports extends ListRecords
 {
@@ -19,9 +20,11 @@ class ListReports extends ListRecords
             Action::make('export')
                 ->label('Ekspor PDF')
                 ->icon('bi-file-pdf-fill')
-                ->action(function () {
-
-                })
+                ->url(fn() => route('report.employee-performance', [
+                    'month' => $this->tableFilters['created_at']['month'] ?? now()->month,
+                    'year' => $this->tableFilters['created_at']['year'] ?? now()->year,
+                ]))
+                ->openUrlInNewTab()
         ];
     }
 
@@ -34,21 +37,24 @@ class ListReports extends ListRecords
     {
         $query = parent::getTableQuery();
         $filterData = $this->tableFilters['created_at'] ?? null;
-        $startDate = isset($filterData['date_from']) ? Carbon::parse($filterData['date_from']) : now()->startOfMonth();
-        $endDate = isset($filterData['date_to']) ? Carbon::parse($filterData['date_to']) : now()->endOfMonth();
+        $month = !empty($filterData['month']) ? $filterData['month'] : now()->month;
+        $year = !empty($filterData['year']) ? $filterData['year'] : now()->year;
+
         $query
             ->withCount([
-                'cleaningSchedules' => function (Builder $query) use ($startDate, $endDate) {
+                'cleaningSchedules' => function (Builder $query) use ($month, $year) {
                     $query->where('status', 'completed')
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month);
                 }
             ])
             ->withAvg([
-                'cleaningSchedules' => function (Builder $query) use ($startDate, $endDate) {
+                'cleaningSchedules' => function (Builder $query) use ($month, $year) {
                     $query->where('status', 'completed')
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month);
                 }
-            ], 'cleaning_duration'); // Pastikan nama kolom durasi benar
+            ], 'cleaning_duration');
 
         return $query;
     }
