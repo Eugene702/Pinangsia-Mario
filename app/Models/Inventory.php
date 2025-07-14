@@ -26,4 +26,8 @@ class Inventory extends Model
     {
         return $this->hasMany(InventoryBorrowing::class);
     }
+
+    public function itemPurchaseTransaction(){
+        return $this->hasMany(ItemPurchaseTransaction::class, "inventoryId", 'id');
+    }
 }

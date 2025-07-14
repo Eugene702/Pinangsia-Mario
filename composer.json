@@ -8,6 +8,8 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "codeat3/blade-carbon-icons": "^2.35",
+        "davidhsianturi/blade-bootstrap-icons": "^2.1",
         "filament/filament": "^3.3",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",

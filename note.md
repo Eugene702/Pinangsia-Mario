@@ -53,3 +53,7 @@ Mengupdate status kamar ke "Sudah Dibersihkan" setelah selesai
 Melihat permintaan tamu di sistem, lalu menindaklanjuti (misalnya mengantarkan handuk tambahan ke kamar)
 Melaporkan kerusakan atau barang hilang di kamar kepada manajer housekeeping
 Melihat laporan stok perlengkapan housekeeping, jika ada kekurangan, melaporkan ke manajer housekeeping
+
+tambah transaksi pembelian buat role si manager
+laporan kinerja
+absensi(opsional)
