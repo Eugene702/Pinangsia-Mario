@@ -11,3 +11,4 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::get('report/employee-performance', [\App\Http\Controllers\pdf\EmployeePerformanceReportController::class, 'export'])->name('report.employee-performance');
+Route::get('report/item-purchase-transaction', [\App\Http\Controllers\pdf\ItemPurchaseTransactionController::class, 'export'])->name('report.item-purchase-transaction');

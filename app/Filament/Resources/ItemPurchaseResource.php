@@ -22,7 +22,6 @@ class ItemPurchaseResource extends Resource
 {
     protected static ?string $model = ItemPurchaseTransaction::class;
     protected static ?string $pluralModelLabel = 'Transaksi Pembelian';
-
     protected static ?string $navigationIcon = 'carbon-purchase';
     protected static ?string $navigationGroup = 'Manajemen Inventaris';
     protected static ?string $navigationLabel = 'Pembelian Barang';
@@ -117,16 +116,21 @@ class ItemPurchaseResource extends Resource
                         DatePicker::make('created_from')
                             ->label('Dari Tanggal')
                             ->required(),
-                        
+
                         DatePicker::make('created_to')
                             ->label('Sampai Tanggal')
                             ->required(),
                     ])
-                    ->query(function(Builder $query, array $data){
-                        return $query->whereBetween('created_at', [
-                            $data['created_from'] ?? now()->startOfDay(),
-                            $data['created_to'] ?? now()->endOfDay()
-                        ]);
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_to'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
                     })
             ])
             ->actions([

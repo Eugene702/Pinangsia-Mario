@@ -6,8 +6,6 @@ use App\Filament\Resources\ReportResource;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
-use Spatie\LaravelPdf\Facades\Pdf;
 
 class ListReports extends ListRecords
 {
