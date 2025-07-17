@@ -93,7 +93,6 @@ class CleaningReportResource extends Resource
                     ->form([
                         DatePicker::make('report_date')
                             ->label('Filter by Date')
-                            ->default(now()),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -110,19 +109,6 @@ class CleaningReportResource extends Resource
                         return 'Filter by date: ' . $data['report_date'];
                     }),
             ])
-            ->actions([
-                Action::make('pdf')
-                    ->label('PDF')
-                    ->color('success')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->action(function (CleaningSchedule $record) {
-                        return response()->streamDownload(function () use ($record) {
-                            echo Pdf::loadHtml(
-                                Blade::render('pdf.cleaning-report', ['record' => $record])
-                            )->stream();
-                        }, 'cleaning-report-' . $record->id . '.pdf');
-                    }),
-            ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('export_pdf')
                     ->label('Export Selected to PDF')
@@ -135,31 +121,6 @@ class CleaningReportResource extends Resource
                             )->stream();
                         }, 'staff-report-' . now()->format('Y-m-d') . '.pdf');
                     }),
-            ])
-            ->headerActions([
-                Action::make('export_daily')
-                    ->label('Export Daily Report')
-                    ->color('primary')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->action(function (array $data) {
-                        $records = CleaningSchedule::query()
-                            ->whereDate('scheduled_at', $data['report_date'])
-                            ->get();
-
-                        return response()->streamDownload(function () use ($records, $data) {
-                            echo Pdf::loadHtml(
-                                Blade::render('pdf.daily-cleaning-report', [
-                                    'records' => $records,
-                                    'date' => $data['report_date']
-                                ])
-                            )->stream();
-                        }, 'daily-cleaning-report-' . $data['report_date'] . '.pdf');
-                    })
-                    ->form([
-                        Forms\Components\DatePicker::make('report_date')
-                            ->label('Select Date')
-                            ->default(now()),
-                    ]),
             ]);
     }
 
