@@ -123,4 +123,10 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'hotel_coordinates' => [
+        'latitude' => env('HOTEL_LATITUDE', 0.0),
+        'longitude' => env('HOTEL_LONGITUDE', 0.0),
+    ],
+
+    'attendance_radius' => env('ATTENDANCE_RADIUS', 100),
 ];

@@ -13,8 +13,12 @@ return new class extends Migration
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->bigInteger('monthlyShiftId')->unsigned();
-            $table->foreign('monthlyShiftId')->references('id')->on('monthly_shifts')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('clock_in_time');
+            $table->decimal('clock_in_latitude', 10, 7);
+            $table->decimal('clock_in_longitude', 10, 7);
+            $table->text('clock_in_location')->nullable();
+            $table->string('status');
             $table->timestamps();
         });
     }
