@@ -31,6 +31,30 @@ class MonthlyShift extends Model
             return 'Shift Regular (Pagi: Senin-Jumat)';
         }
 
-        return 'Shift Custom: ' . collect($this->shift_data)->implode(', ');
+        if ($this->shift_pattern === 'custom') {
+            $dayMap = [
+                '1' => 'Senin',
+                '2' => 'Selasa',
+                '3' => 'Rabu',
+                '4' => 'Kamis',
+                '5' => 'Jumat',
+                '6' => 'Sabtu',
+                '7' => 'Minggu'
+            ];
+
+            $dayNames = $this->monthlyShiftDays->map(fn($day) => $dayMap[$day->day] ?? null)
+                ->filter()
+                ->implode(', ');
+
+            $shiftTime = ucfirst($this->shift_data ?? '');
+            return "Shift Custom: {$shiftTime} ({$dayNames})";
+        }
+
+        return $this->shift_pattern;
+    }
+
+    public function monthlyShiftDays()
+    {
+        return $this->hasMany(MonthlyShiftDays::class, 'monthlyShiftId', 'id');
     }
 }

@@ -7,6 +7,11 @@ use App\Filament\Resources\MonthlyShiftResource\Pages;
 use App\Models\MonthlyShift;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -108,18 +113,41 @@ class MonthlyShiftResource extends Resource
                 Radio::make('shift_data')
                     ->label('Shift Custom')
                     ->options([
-                        'pagi' => 'Shift Pagi (07:00-15:00)',
-                        'siang' => 'Shift Siang (15:00-23:00)',
-                        'malam' => 'Shift Malam (23:00-07:00)'
+                        'pagi' => 'Shift Pagi (07:00-17:00)',
+                        'siang' => 'Shift Siang (16:00-01:00)',
+                        'malam' => 'Shift Malam (00:00-08:00)'
                     ])
                     ->hidden(fn(Forms\Get $get) => $get('shift_pattern') !== 'custom')
+                    ->required(fn(Forms\Get $get) => $get('shift_pattern') === 'custom')
                     ->columnSpanFull()
                     ->columns(3),
+
+                CheckboxList::make('custom_days')
+                    ->label('Pilih Hari untuk Shift Custom')
+                    ->options([
+                        '1' => 'Senin',
+                        '2' => 'Selasa',
+                        '3' => 'Rabu',
+                        '4' => 'Kamis',
+                        '5' => 'Jumat',
+                        '6' => 'Sabtu',
+                        '7' => 'Minggu',
+                    ])
+                    ->columns(4)
+                    ->gridDirection('row')
+                    ->hidden(fn(Forms\Get $get) => $get('shift_pattern') !== 'custom')
+                    ->required(fn(Forms\Get $get) => $get('shift_pattern') === 'custom')
+                    ->columnSpanFull(),
 
                 Textarea::make('notes')
                     ->label('Catatan')
                     ->columnSpanFull()
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user', 'monthlyShiftDays']);
     }
 
     public static function table(Table $table): Table
@@ -201,8 +229,25 @@ class MonthlyShiftResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->fillForm(function (MonthlyShift $record): array {
+                        $data = $record->toArray();
+                        $data['custom_days'] = $record->monthlyShiftDays->pluck('day')->toArray();
+                        return $data;
+                    })
+                    ->after(function (MonthlyShift $record, array $data) {
+                        if ($data['shift_pattern'] === 'custom') {
+                            DB::transaction(function () use ($record, $data) {
+                                $record->monthlyShiftDays()->delete();
+                                if (!empty($data['custom_days'])) {
+                                    foreach ($data['custom_days'] as $day) {
+                                        $record->monthlyShiftDays()->create(['day' => $day]);
+                                    }
+                                }
+                            });
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
