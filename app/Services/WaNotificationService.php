@@ -11,11 +11,8 @@ class WaNotificationService
 
     public function sendCleaningAssignmentNotification(User $staff, string $roomNumber, string $scheduledTime): bool
     {
-        // Format nomor telepon (pastikan tanpa 0 di depan)
         $phoneNumber = $this->formatPhoneNumber($staff->no_telp);
-
         $message = "Hai {$staff->name},\n\nAnda telah ditugaskan untuk membersihkan kamar {$roomNumber} pada {$scheduledTime}.\n\nSilahkan periksa dashboard untuk detail lebih lanjut.";
-
         return $this->sendMessage($phoneNumber, $message);
     }
 
@@ -57,10 +54,7 @@ class WaNotificationService
 
     protected function formatPhoneNumber(string $phone): string
     {
-        // Hapus semua karakter non-digit
         $phone = preg_replace('/[^0-9]/', '', $phone);
-
-        // Jika diawali dengan 0, ganti dengan 62
         if (str_starts_with($phone, '0')) {
             return '62' . substr($phone, 1);
         }
