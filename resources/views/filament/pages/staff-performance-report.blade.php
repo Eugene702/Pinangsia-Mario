@@ -75,6 +75,13 @@
                     </div>
 
                     <div class="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Total Hari Hadir</span>
+                        <div class="text-3xl font-bold text-primary-600 dark:text-primary-500 mt-1">
+                            {{ $performanceData['presentCount'] }}
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
                         <span class="text-sm text-gray-500 dark:text-gray-400">Permintaan Diselesaikan</span>
                         <div class="text-3xl font-bold text-primary-600 dark:text-primary-500 mt-1">
                             {{ $performanceData['requests'] }}</div>

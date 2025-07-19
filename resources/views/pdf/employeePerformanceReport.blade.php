@@ -167,6 +167,7 @@
             font-weight: 700;
             color: #f97316;
             font-size: 14px;
+            text-align: center;
         }
 
         .performance-table .employee-name {
@@ -325,7 +326,7 @@
             </div>
             <div class="meta-item">
                 <div class="label">Total Karyawan</div>
-                <div class="value">{{ count($user) }} Orang</div>
+                <div class="value">{{ $users->count() }} Orang</div>
             </div>
             <div class="meta-item">
                 <div class="label">Departemen</div>
@@ -346,17 +347,19 @@
                         <th>Nama Staff</th>
                         <th>Total Kamar Dibersihkan</th>
                         <th>Durasi Pembersihan</th>
+                        <th>Jumlah Hadir</th>
                         <th>Skor Kinerja</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($user as $row)
+                    @foreach ($users as $row)
                         <tr>
                             <td class="rank">{{ $loop->iteration }}</td>
-                            <td class="employee-name">{{ $row['name'] }}</td>
-                            <td class="metric">{{ $row['cleaning_schedules_count'] }}</td>
-                            <td class="metric">{{ $row['cleaning_schedules_avg_cleaning_duration'] ?? 0 }}</td>
-                            <td class="metric">{{ $row['score'] ?? 0 }}</td>
+                            <td class="employee-name">{{ $row->name }}</td>
+                            <td class="metric">{{ $row->cleaning_schedules_count }}</td>
+                            <td class="metric">{{ round($row->cleaning_schedules_avg_cleaning_duration, 2) }} menit</td>
+                            <td class="metric">{{ $row->present_count }}</td>
+                            <td class="metric">{{ round($row->score, 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -371,17 +374,17 @@
                     <div class="label">Total Kamar</div>
                 </div>
                 <div class="summary-card">
-                    <div class="number">{{ $avgDuration ?? 0 }}</div>
+                    <div class="number">{{ round($avgDuration, 2) }}</div>
                     <div class="label">Rata-rata Durasi</div>
                 </div>
                 <div class="summary-card">
-                    <div class="number">{{ $highestScore ?? 0 }}</div>
+                    <div class="number">{{ round($highestScore, 2) }}</div>
                     <div class="label">Skor Tertinggi</div>
                 </div>
-                {{-- <div class="summary-card">
-                    <div class="number">100%</div>
+                <div class="summary-card">
+                    <div class="number">{{ round($attendanceRate, 1) }}%</div>
                     <div class="label">Tingkat Kehadiran</div>
-                </div> --}}
+                </div>
             </div>
         </div>
 

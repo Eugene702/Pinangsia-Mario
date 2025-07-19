@@ -22,8 +22,34 @@ class ReportResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
+        $month = request()->query('tableFilters')['created_at']['month'] ?? now()->month;
+        $year = request()->query('tableFilters')['created_at']['year'] ?? now()->year;
+
         return parent::getEloquentQuery()
-            ->where('role', '=', 'housekeeping');
+            ->where('role', 'housekeeping')
+            ->withCount([
+                'cleaningSchedules' => function ($query) use ($month, $year) {
+                    $query->where('status', 'completed')
+                        ->whereYear('completed_at', $year)
+                        ->whereMonth('completed_at', $month);
+                }
+            ])
+
+            ->withAvg([
+                'cleaningSchedules' => function ($query) use ($month, $year) {
+                    $query->where('status', 'completed')
+                        ->whereYear('completed_at', $year)
+                        ->whereMonth('completed_at', $month);
+                }
+            ], 'cleaning_duration')
+
+            ->withCount([
+                'attendance as present_count' => function ($query) use ($month, $year) {
+                    $query->whereIn('status', ['tepat_waktu', 'terlambat'])
+                        ->whereYear('clock_in_time', $year)
+                        ->whereMonth('clock_in_time', $month);
+                }
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -45,31 +71,51 @@ class ReportResource extends Resource
                         return $record->cleaning_schedules_count ?? 0;
                     }),
 
-                TextColumn::make('cleaningDuration')
+                TextColumn::make('cleaning_schedules_avg_cleaning_duration')
                     ->label('Durasi Pembersihan')
-                    ->state(function ($record) {
-                        return $record->cleaning_schedules_avg_cleaning_duration ?? 0;
-                    }),
+                    ->formatStateUsing(fn($state) => round($state, 2) . ' menit')
+                    ->default(0),
+
+                TextColumn::make('present_count')
+                    ->label('Jumlah Hadir')
+                    ->default(0),
 
                 TextColumn::make('score')
                     ->label('Skor Kinerja')
-                    ->state(function ($record) use ($performanceCalculatorService) {
-                        return $performanceCalculatorService->calculatePerformance($record);
+                    ->state(function (User $record) {
+                        $service = app(\App\Services\PerformanceCalculatorService::class);
+                        $score = $service->calculatePerformance($record, $record->present_count);
+                        return round($score, 2);
                     })
             ])
-            ->defaultSort(function (Builder $query) use ($performanceCalculatorService) {
-                $targetDuration = $performanceCalculatorService::TARGET_DURATION;
-                $maxRoomsCompleted = $performanceCalculatorService::MAX_ROOMS_COMPLETED;
-                $speedWeight = $performanceCalculatorService::SPEED_WEIGHT;
-                $productivityWeight = $performanceCalculatorService::PRODUCTIVITY_WEIGHT;
+            ->defaultSort(function (Builder $query) {
+                $service = app(\App\Services\PerformanceCalculatorService::class);
+                $targetDuration = $service::TARGET_DURATION;
+                $maxRoomsCompleted = $service::MAX_ROOMS_COMPLETED;
+                $totalWorkDays = 22; 
+    
+                $speedWeight = $service::SPEED_WEIGHT;
+                $productivityWeight = $service::PRODUCTIVITY_WEIGHT;
+                $cleaningWeight = $service::CLEANING_WEIGHT;
+                $attendanceWeight = $service::ATTENDANCE_WEIGHT;
+
                 $avgDurationColumn = 'cleaning_schedules_avg_cleaning_duration';
                 $countColumn = 'cleaning_schedules_count';
+                $presentCountColumn = 'present_count';
 
                 $query->orderByRaw(
-                    "CASE WHEN {$avgDurationColumn} > 0 AND {$maxRoomsCompleted} > 0 THEN 
-                    ((({$targetDuration} / {$avgDurationColumn}) * 100) * {$speedWeight}) + 
-                    ((({$countColumn} / {$maxRoomsCompleted}) * 100) * {$productivityWeight}) 
-                    ELSE 0 END DESC"
+                    "CASE 
+                    WHEN {$avgDurationColumn} > 0 AND {$maxRoomsCompleted} > 0 AND {$totalWorkDays} > 0 THEN
+                        (
+                            ( (({$targetDuration} / {$avgDurationColumn}) * 100) * {$speedWeight} ) + 
+                            ( (({$countColumn} / {$maxRoomsCompleted}) * 100) * {$productivityWeight} )
+                        ) * {$cleaningWeight}
+                        +
+                        (
+                            ( ({$presentCountColumn} / {$totalWorkDays}) * 100 ) * {$attendanceWeight}
+                        )
+                    ELSE 0 
+                END DESC"
                 );
             })
             ->filters([
