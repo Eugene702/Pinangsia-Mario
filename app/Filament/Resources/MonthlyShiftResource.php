@@ -207,12 +207,13 @@ class MonthlyShiftResource extends Resource
                             ->when($month, fn($q) => $q->where('month', $month))
                             ->get()
                             ->map(function ($shift) {
+                                // dd($shift);
                                 return [
                                     'staff' => preg_replace('/[^\x20-\x7E]/', '', $shift->user->name),
                                     'pattern' => $shift->shift_pattern === 'regular' ? 'Regular' : 'Custom',
                                     'shifts' => $shift->shift_pattern === 'regular'
                                         ? 'Pagi (Senin-Jumat)'
-                                        : implode(', ', $shift->shift_data ?? []),
+                                        : $shift->shift_data,
                                 ];
                             });
 
