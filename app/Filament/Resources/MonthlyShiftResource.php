@@ -30,10 +30,11 @@ class MonthlyShiftResource extends Resource
     protected static ?string $model = MonthlyShift::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
-    protected static ?string $modelLabel = 'Jadwal Kerja Staff';
+    protected static ?string $modelLabel = 'Jadwal Kerja';
     protected static ?string $navigationLabel = 'Jadwal Kerja Staff';
     protected static ?string $navigationGroup = 'Manajemen Housekeeping';
     protected static ?string $slug = 'jadwal-kerja';
+    protected static ?string $pluralModelLabel = 'Jadwal Kerja Staff';
 
     public static function form(Form $form): Form
     {
