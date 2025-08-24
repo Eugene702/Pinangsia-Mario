@@ -99,7 +99,7 @@ class ListAttendances extends ListRecords
         }
 
         $alreadyClockedIn = Attendance::where('user_id', auth()->id())
-            ->where('clock_in_time', '>=', $scheduleDetails['start']->copy()->subMinutes(480))
+            ->where('clock_in_time', '>=', $scheduleDetails['start']->copy()->subMinutes(30))
             ->where('clock_in_time', '<=', $scheduleDetails['end'])
             ->exists();
 
@@ -110,7 +110,7 @@ class ListAttendances extends ListRecords
     
         $startTime = $scheduleDetails['start'];
         $allowedStartTime = $startTime->copy()->subMinutes(30);
-        $deadline = $startTime->copy()->addHour();             
+        $deadline = $startTime->copy()->addHour(8);             
 
         return now()->isBetween($allowedStartTime, $deadline);
     }
