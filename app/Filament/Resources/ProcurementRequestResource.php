@@ -27,6 +27,7 @@ class ProcurementRequestResource extends Resource
     protected static ?string $navigationLabel = 'Permintaan Pengadaan';
     protected static ?string $modelLabel = 'Permintaan Pengadaan';
     protected static ?string $slug = 'permintaan-pengadaan';
+    protected static ?string $pluralModelLabel = 'Permintaan Pengadaan Barang';
 
     // Menambahkan badge untuk menampilkan jumlah pending
     public static function getNavigationBadge(): ?string

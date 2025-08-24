@@ -22,7 +22,7 @@ class InventoryBorrowingResource extends Resource
     protected static ?string $navigationLabel = 'History Pemakaian';
     protected static ?string $modelLabel = 'History Pemakaian Barang';
     protected static ?string $slug = 'history-pemakaian-barang';
-
+    protected static ?string $pluralModelLabel = 'History Pemakaian Barang';
     // Hide create/edit pages for this resource
     public static function canCreate(): bool
     {

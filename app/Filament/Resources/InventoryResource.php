@@ -22,6 +22,7 @@ class InventoryResource extends Resource
     protected static ?string $navigationLabel = 'Stok Perlengkapan';
     protected static ?string $modelLabel = 'Stok Perlengkapan';
     protected static ?string $slug = 'stok-perlengkapan';
+    protected static ?string $pluralModelLabel = 'Stok Perlengakpan';
 
 
     public static function form(Form $form): Form

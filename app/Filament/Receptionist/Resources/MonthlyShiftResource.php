@@ -21,6 +21,8 @@ class MonthlyShiftResource extends Resource
     protected static ?string $navigationLabel = 'Jadwal Kerja Staff';
     protected static ?string $slug = 'jadwal-kerja';
 
+     protected static ?string $pluralModelLabel = 'Jadwal Kerja StaffHousekeeping';
+
     public static function form(Form $form): Form
     {
         return $form

@@ -29,6 +29,11 @@ class CleaningReportResource extends Resource
     protected static ?string $slug = 'laporan-pembersihan';
     protected static ?string $modelLabel = 'Laporan Pembersihan';
 
+    protected static ?string $pluralModelLabel = 'Laporan Pembersihan';
+
+
+
+
     public static function form(Form $form): Form
     {
         return $form

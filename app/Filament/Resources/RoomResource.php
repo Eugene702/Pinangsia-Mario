@@ -31,6 +31,8 @@ class RoomResource extends Resource
     protected static ?string $modelLabel = 'Kamar';
     protected static ?string $slug = 'kamar';
 
+    protected static ?string $pluralModelLabel = 'Daftar Kamar';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
