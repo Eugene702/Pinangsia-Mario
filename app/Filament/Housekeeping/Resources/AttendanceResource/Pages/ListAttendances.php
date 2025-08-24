@@ -110,7 +110,7 @@ class ListAttendances extends ListRecords
     
         $startTime = $scheduleDetails['start'];
         $allowedStartTime = $startTime->copy()->subMinutes(30);
-        $deadline = $startTime->copy()->addHour(8);             
+        $deadline = $startTime->copy()->addHours(8);             
 
         return now()->isBetween($allowedStartTime, $deadline);
     }
