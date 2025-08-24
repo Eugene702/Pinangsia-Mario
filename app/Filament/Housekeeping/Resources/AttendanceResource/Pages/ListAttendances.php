@@ -95,31 +95,33 @@ class ListAttendances extends ListRecords
     {
         $scheduleDetails = $this->getActiveShiftDetails();
         if (empty($scheduleDetails)) {
+            // Debug: Log jika tidak ada schedule
+            \Log::info('No schedule found for user: ' . auth()->id() . ' at ' . now());
             return false;
         }
 
         $alreadyClockedIn = Attendance::where('user_id', auth()->id())
-            ->where('clock_in_time', '>=', $scheduleDetails['start']->copy()->subMinutes(30))
-            ->where('clock_in_time', '<=', $scheduleDetails['end'])
+            ->whereDate('clock_in_time', now()->toDateString())
             ->exists();
 
         if ($alreadyClockedIn) {
+            // Debug: Log jika sudah absen
+            \Log::info('User already clocked in today: ' . auth()->id());
             return false;
         }
 
-    
-        $startTime = $scheduleDetails['start'];
-        $allowedStartTime = $startTime->copy()->subMinutes(30);
-        $deadline = $startTime->copy()->addHours(8);             
-
-        return now()->isBetween($allowedStartTime, $deadline);
+        // Jika ada jadwal hari ini dan belum absen, tampilkan tombol
+        \Log::info('Attendance button shown for user ' . auth()->id() . ' - has schedule today and not clocked in yet');
+        return true;
     }
 
     public function getActiveShiftDetails(): ?array
     {
         $user = auth()->user();
         $now = now();
-        $gracePeriodMinutes = 30;
+
+        // Debug: Log basic info
+        \Log::info('Checking shift for user: ' . $user->id . ' at ' . $now . ' (day of week ISO: ' . $now->dayOfWeekIso . ')');
 
         $todayMonthlyShift = MonthlyShift::with('monthlyShiftDays')
             ->where('user_id', $user->id)
@@ -127,8 +129,15 @@ class ListAttendances extends ListRecords
             ->whereMonth('month', $now->month)
             ->first();
 
+        // Debug: Log monthly shift
+        \Log::info('Monthly shift found: ' . ($todayMonthlyShift ? 'Yes - Shift: ' . $todayMonthlyShift->shift_data : 'No'));
+
         if ($todayMonthlyShift) {
             $workDays = $todayMonthlyShift->monthlyShiftDays->pluck('day')->toArray();
+            
+            // Debug: Log work days
+            \Log::info('Work days: ' . json_encode($workDays) . ', Today is: ' . $now->dayOfWeekIso);
+            
             if (in_array($now->dayOfWeekIso, $workDays)) {
                 $shiftType = $todayMonthlyShift->shift_data;
                 [$startTime, $endTime] = match ($shiftType) {
@@ -139,13 +148,13 @@ class ListAttendances extends ListRecords
                 };
 
                 if ($startTime) {
-                    if ($now->isBetween($startTime->copy()->subMinutes($gracePeriodMinutes), $endTime)) {
-                        return ['start' => $startTime, 'end' => $endTime];
-                    }
+                    \Log::info('Found valid shift for today: ' . $shiftType);
+                    return ['start' => $startTime, 'end' => $endTime];
                 }
             }
         }
 
+        // Cek shift kemarin untuk shift siang yang berlanjut ke hari ini
         $yesterday = $now->copy()->subDay();
         $yesterdayMonthlyShift = MonthlyShift::with('monthlyShiftDays')
             ->where('user_id', $user->id)
@@ -157,16 +166,16 @@ class ListAttendances extends ListRecords
             $workDays = $yesterdayMonthlyShift->monthlyShiftDays->pluck('day')->toArray();
             if (in_array($yesterday->dayOfWeekIso, $workDays)) {
                 $shiftType = $yesterdayMonthlyShift->shift_data;
-                if ($shiftType === 'siang') {
+                if ($shiftType === 'siang' && $now->hour <= 1) { // Shift siang berakhir jam 1 pagi
                     $startTime = $yesterday->copy()->setTime(16, 0);
                     $endTime = $yesterday->copy()->addDay()->setTime(1, 0);
-                    if ($now->isBetween($startTime, $endTime)) {
-                        return ['start' => $startTime, 'end' => $endTime];
-                    }
+                    \Log::info('Found valid yesterday shift (siang) continuing to today');
+                    return ['start' => $startTime, 'end' => $endTime];
                 }
             }
         }
 
+        \Log::info('No valid shift found');
         return null;
     }
 }
