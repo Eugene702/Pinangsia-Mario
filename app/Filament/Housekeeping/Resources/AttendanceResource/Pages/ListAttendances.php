@@ -99,7 +99,7 @@ class ListAttendances extends ListRecords
         }
 
         $alreadyClockedIn = Attendance::where('user_id', auth()->id())
-            ->where('clock_in_time', '>=', $scheduleDetails['start']->copy()->subMinutes(300))
+            ->where('clock_in_time', '>=', $scheduleDetails['start']->copy()->subMinutes(480))
             ->where('clock_in_time', '<=', $scheduleDetails['end'])
             ->exists();
 
